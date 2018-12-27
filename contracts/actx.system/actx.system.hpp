@@ -199,6 +199,10 @@ namespace eosiosystem {
          void rmvproducer( account_name producer );
 
          void bidname( account_name bidder, account_name newname, asset bid );
+
+         // change producer schedule limit size 
+         void setproposedschedulesize( uint32_t size );
+
       private:
          void update_elected_producers( block_timestamp timestamp );
 

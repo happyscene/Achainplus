@@ -84,6 +84,17 @@ namespace eosiosystem {
       require_auth( _self );
       set_privileged( account, ispriv );
    }
+   
+   void system_contract::setproposedschedulesize( uint32_t size )
+   {
+      require_auth( N(actx) );
+
+      uint32_t schedule_size = get_proposed_schedule_size();
+      
+      eosio_assert( size > schedule_size, "new size should be larger than current size" );
+
+      set_proposed_schedule_size(size);
+   }
 
    void system_contract::rmvproducer( account_name producer ) {
       require_auth( _self );

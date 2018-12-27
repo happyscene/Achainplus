@@ -31,6 +31,7 @@ namespace eosio { namespace chain {
       id_type                           id;
       optional<block_num_type>          proposed_schedule_block_num;
       shared_producer_schedule_type     proposed_schedule;
+      optional<schedule_size_type>      proposed_schedule_size;
       chain_config                      configuration;
    };
 

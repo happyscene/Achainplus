@@ -10,7 +10,8 @@ namespace identity {
    }
 
    bool identity_base::is_trusted( account_name acnt ) {
-      account_name active_producers[21];
+      uint32_t schedule_size = get_proposed_schedule_size();
+      account_name active_producers[schedule_size];
       auto active_prod_size = get_active_producers( active_producers, sizeof(active_producers) );
       auto count = active_prod_size / sizeof(account_name);
       for( size_t i = 0; i < count; ++i ) {

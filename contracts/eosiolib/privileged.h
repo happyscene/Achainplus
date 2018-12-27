@@ -47,6 +47,11 @@ extern "C" {
     */
    int64_t set_proposed_producers( char *producer_data, uint32_t producer_data_size );
 
+   
+   bool set_proposed_schedule_size( uint32_t size );
+
+   uint32_t get_proposed_schedule_size();
+
    /**
     * @brief Set new active producers
     * Set new active producers. Producers will only be activated once the block which starts the next round is irrreversible

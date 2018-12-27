@@ -34,8 +34,8 @@ extern "C" {
      *  Example:
      *
      *  @code
-     *  account_name producers[21];
-     *  uint32_t bytes_populated = get_active_producers(producers, sizeof(account_name)*21);
+     *  account_name producers[schedule_size];
+     *  uint32_t bytes_populated = get_active_producers(producers, sizeof(account_name)*schedule_size);
      *  @endcode
      */
 

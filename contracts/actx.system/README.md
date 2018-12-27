@@ -5,7 +5,7 @@ This contract enables users to stake tokens, and then configure and vote on prod
 
 Users can also proxy their voting influence to other users.
 
-The state of this contract is read to determine the 21 active block producers. 
+The state of this contract is read to determine the active block producers. 
 
 Actions:
 The naming convention is codeaccount::actionname followed by a list of paramters.

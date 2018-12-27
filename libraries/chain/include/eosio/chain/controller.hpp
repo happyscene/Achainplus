@@ -226,6 +226,10 @@ namespace eosio { namespace chain {
          bool is_known_unexpired_transaction( const transaction_id_type& id) const;
 
          int64_t set_proposed_producers( vector<producer_key> producers );
+         
+         bool set_proposed_schedule_size( schedule_size_type size );
+
+         uint32_t get_proposed_schedule_size();
 
          bool light_validation_allowed(bool replay_opts_disabled_by_policy) const;
          bool skip_auth_check()const;

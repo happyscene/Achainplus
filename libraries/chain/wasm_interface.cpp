@@ -167,6 +167,16 @@ class privileged_api : public context_aware_api {
          return context.control.set_proposed_producers( std::move(producers) );
       }
 
+      bool set_proposed_schedule_size( uint32_t size )
+      {
+         return context.control.set_proposed_schedule_size( size );
+      }
+      
+      uint32_t get_proposed_schedule_size()
+      {
+         return context.control.get_proposed_schedule_size();
+      }
+
       uint32_t get_blockchain_parameters_packed( array_ptr<char> packed_blockchain_parameters, size_t buffer_size) {
          auto& gpo = context.control.get_global_properties();
 
@@ -1681,6 +1691,8 @@ REGISTER_INTRINSICS(privileged_api,
    (get_resource_limits,              void(int64_t,int,int,int)             )
    (set_resource_limits,              void(int64_t,int64_t,int64_t,int64_t) )
    (set_proposed_producers,           int64_t(int,int)                      )
+   (set_proposed_schedule_size,       bool(int)                             )
+   (get_proposed_schedule_size,       int()                                 )
    (get_blockchain_parameters_packed, int(int, int)                         )
    (set_blockchain_parameters_packed, void(int,int)                         )
    (is_privileged,                    int(int64_t)                          )
