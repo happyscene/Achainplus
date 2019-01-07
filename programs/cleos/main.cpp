@@ -1580,6 +1580,22 @@ struct canceldelay_subcommand {
    }
 };
 
+struct setschedulesize_subcommand {
+   uint32_t schedule_size;
+
+   setschedulesize_subcommand(CLI::App* actionRoot) {
+      auto set_schedule_size = actionRoot->add_subcommand("setschedulesize", localized("change schedule zise"));
+      cancel_delay->add_option("schedule_size", schedule_size, localized("new schedule size should larger than current size"))->required();
+
+      set_schedule_size->set_callback([this] {
+         fc::variant schedulesize_var = fc::mutable_variant_object()
+                  ("size", schedule_size);
+         auto accountPermissions = get_account_permissions(tx_permission, {config::system_account_name, config::active_name});
+         send_actions({create_action(accountPermissions, config::system_account_name, N(setschedulesize), schedulesize_var)});
+      });
+   }
+};
+
 void get_account( const string& accountName, const string& coresym, bool json_format ) {
    fc::variant json;
    if (coresym.empty()) {
@@ -3422,6 +3438,8 @@ int main( int argc, char** argv ) {
    //auto unregProxy = unregproxy_subcommand(system);
 
    auto cancelDelay = canceldelay_subcommand(system);
+
+   auto setschedulesize = setschedulesize_subcommand(system);
 
    try {
        app.parse(argc, argv);

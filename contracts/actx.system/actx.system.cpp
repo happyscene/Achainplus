@@ -85,7 +85,7 @@ namespace eosiosystem {
       set_privileged( account, ispriv );
    }
    
-   void system_contract::setproposedschedulesize( uint32_t size )
+   void system_contract::setschedulesize( uint32_t size )
    {
       require_auth( N(actx) );
 
@@ -203,7 +203,7 @@ EOSIO_ABI( eosiosystem::system_contract,
      // delegate_bandwidth.cpp
      (buyrambytes)(buyram)(sellram)(delegatebw)(undelegatebw)(refund)
      // voting.cpp
-     (regproducer)(unregprod)(voteproducer)
+     (regproducer)(unregprod)(voteproducer)(setschedulesize)
      // producer_pay.cpp
      (onblock)(claimrewards)
 )
