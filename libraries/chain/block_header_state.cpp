@@ -16,7 +16,9 @@ namespace eosio { namespace chain {
    }
 
    uint32_t block_header_state::calc_dpos_last_irreversible()const {
-      vector<uint32_t> blocknums; blocknums.reserve( producer_to_last_implied_irb.size() );
+      vector<uint32_t> blocknums;
+      blocknums.reserve( producer_to_last_implied_irb.size() );
+
       for( auto& i : producer_to_last_implied_irb ) {
          blocknums.push_back(i.second);
       }
@@ -25,6 +27,7 @@ namespace eosio { namespace chain {
       if( blocknums.size() == 0 ) return 0;
       /// TODO: update to nth_element 
       std::sort( blocknums.begin(), blocknums.end() );
+      // 最后不可逆区块的判断条件是必须在池子里面保持有2/3个区块号是大于自己的。
       return blocknums[ (blocknums.size()-1) / 3 ];
    }
 
@@ -89,6 +92,8 @@ namespace eosio { namespace chain {
   } /// generate_next
 
    bool block_header_state::maybe_promote_pending() {
+      // 新计划表不为空，并且（当前不可逆块号）大于（新计划表对应的不可逆块号）
+      // 则将新的产块计划表转成使用中的产块计划表
       if( pending_schedule.producers.size() &&
           dpos_irreversible_blocknum >= pending_schedule_lib_num )
       {
@@ -100,6 +105,7 @@ namespace eosio { namespace chain {
             if( existing != producer_to_last_produced.end() ) {
                new_producer_to_last_produced[pro.producer_name] = existing->second;
             } else {
+               // 如果是本节点新加入的产块账号，把当前不可逆块号设置为该账号打包的最高块号
                new_producer_to_last_produced[pro.producer_name] = dpos_irreversible_blocknum;
             }
          }
@@ -110,6 +116,7 @@ namespace eosio { namespace chain {
             if( existing != producer_to_last_implied_irb.end() ) {
                new_producer_to_last_implied_irb[pro.producer_name] = existing->second;
             } else {
+               // 如果是本节点新加入的产块账号，把当前不可逆块号设置为该账号最后一次打包块时对应的最高不可逆块号
                new_producer_to_last_implied_irb[pro.producer_name] = dpos_irreversible_blocknum;
             }
          }
@@ -127,10 +134,10 @@ namespace eosio { namespace chain {
       EOS_ASSERT( pending.version == active_schedule.version + 1, producer_schedule_exception, "wrong producer schedule version specified" );
       EOS_ASSERT( pending_schedule.producers.size() == 0, producer_schedule_exception,
                  "cannot set new pending producers until last pending is confirmed" );
-      header.new_producers     = move(pending);
+      header.new_producers     = move(pending); // 新产块账号列表
       pending_schedule_hash    = digest_type::hash( *header.new_producers );
-      pending_schedule         = *header.new_producers;
-      pending_schedule_lib_num = block_num;
+      pending_schedule         = *header.new_producers; // 设置新的产块计划表
+      pending_schedule_lib_num = block_num; // 设置新的产块计划表对应的最高块号
   }
 
 
@@ -197,19 +204,21 @@ namespace eosio { namespace chain {
      int32_t i = (int32_t)(confirm_count.size() - 1);
      uint32_t blocks_to_confirm = num_prev_blocks + 1; /// confirm the head block too
      while( i >= 0 && blocks_to_confirm ) {
-        --confirm_count[i];
+        --confirm_count[i]; // 将待确认次数减一
         //idump((confirm_count[i]));
+        // 如果某块的待确认次数为0，表示该块被确认。
+        // 那么，该块和小于该块块号的块都变为已确认状态。
         if( confirm_count[i] == 0 )
         {
            uint32_t block_num_for_i = block_num - (uint32_t)(confirm_count.size() - 1 - i);
-           dpos_proposed_irreversible_blocknum = block_num_for_i;
+           dpos_proposed_irreversible_blocknum = block_num_for_i; // 确定最新的推荐不可逆块号
            //idump((dpos2_lib)(block_num)(dpos_irreversible_blocknum));
 
            if (i == confirm_count.size() - 1) {
-              confirm_count.resize(0);
+              confirm_count.resize(0); // 全部被确认，清空待确认次数队列
            } else {
               memmove( &confirm_count[0], &confirm_count[i + 1], confirm_count.size() - i  - 1);
-              confirm_count.resize( confirm_count.size() - i - 1 );
+              confirm_count.resize( confirm_count.size() - i - 1 ); // 把已确认块的待确认次数清空
            }
 
            return;

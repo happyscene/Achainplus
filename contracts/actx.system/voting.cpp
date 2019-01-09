@@ -73,18 +73,20 @@ namespace eosiosystem {
    void system_contract::update_elected_producers( block_timestamp block_time ) {
       _gstate.last_producer_schedule_update = block_time;
 
-      auto idx = _producers.get_index<N(prototalvote)>();
+      auto idx = _producers.get_index<N(prototalvote)>(); // 投票数表
 
       std::vector< std::pair<eosio::producer_key,uint16_t> > top_producers;
 
-      uint32_t schedule_size = get_proposed_schedule_size();
+      uint32_t schedule_size = get_proposed_schedule_size(); // 当前可设置的最大代理数
 
       top_producers.reserve(schedule_size);
 
+      // 从idx中筛选出产块账号，条件：不多于schedule_size名，接受投票数大于零，处于激活状态
       for ( auto it = idx.cbegin(); it != idx.cend() && top_producers.size() < schedule_size && 0 < it->total_votes && it->active(); ++it ) {
          top_producers.emplace_back( std::pair<eosio::producer_key,uint16_t>({{it->owner, it->producer_key}, it->location}) );
       }
 
+      // 新选出的产块账号数不能少比上一次少，否则无效
       if ( top_producers.size() < _gstate.last_producer_schedule_size ) {
          return;
       }

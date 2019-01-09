@@ -11,8 +11,8 @@ namespace eosiosystem {
    const double   standby_rate          = 0.0075;           // 0.75%
    const uint32_t blocks_per_year       = 52*7*24*2*3600;   // half seconds per year
    const uint32_t seconds_per_year      = 52*7*24*3600;
-   const uint32_t blocks_per_day        = 2 * 24 * 3600;
-   const uint32_t blocks_per_hour       = 2 * 3600;
+   const uint32_t blocks_per_day        = 2 * 24 * 3600; // 一天产块数量
+   const uint32_t blocks_per_hour       = 2 * 3600; // 一小时的产块数量
    const uint64_t useconds_per_day      = 24 * 3600 * uint64_t(1000000);
    const uint64_t useconds_per_year     = seconds_per_year*1000000ll;
 
@@ -43,6 +43,7 @@ namespace eosiosystem {
       }
 
       /// only update block producers once every minute, block_timestamp is in half seconds
+      // 一分钟更新一次产块账号，0.5秒产一个块，0.5*120为60秒
       if( timestamp.slot - _gstate.last_producer_schedule_update.slot > 120 ) {
          update_elected_producers( timestamp );
 

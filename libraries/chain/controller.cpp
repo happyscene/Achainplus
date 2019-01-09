@@ -1130,7 +1130,7 @@ struct controller_impl {
       pending->_pending_block_state = std::make_shared<block_state>( *head, when ); // promotes pending schedule (if any) to active
       pending->_pending_block_state->in_current_chain = true;
 
-      pending->_pending_block_state->set_confirmed(confirm_block_count);
+      pending->_pending_block_state->set_confirmed(confirm_block_count); // 参数是可以确认的块数目
 
       auto was_pending_promoted = pending->_pending_block_state->maybe_promote_pending();
 
@@ -1991,6 +1991,8 @@ int64_t controller::set_proposed_producers( vector<producer_key> producers ) {
    decltype(sch.producers.cend()) end;
    decltype(end)                  begin;
 
+   // 如果pending_schedule.producers为空，则比较active_schedule.producers和producers是否相同。
+   // 如果pending_schedule.producers不为空，则比较pending_schedule.producers和producers是否相同。
    if( my->pending->_pending_block_state->pending_schedule.producers.size() == 0 ) {
       const auto& active_sch = my->pending->_pending_block_state->active_schedule;
       begin = active_sch.producers.begin();
@@ -2010,6 +2012,7 @@ int64_t controller::set_proposed_producers( vector<producer_key> producers ) {
 
    int64_t version = sch.version;
 
+   // 将新的schedule存入内存数据库
    my->db.modify( gpo, [&]( auto& gp ) {
       gp.proposed_schedule_block_num = cur_block_num;
       gp.proposed_schedule = std::move(sch);

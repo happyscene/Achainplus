@@ -128,7 +128,7 @@ class producer_plugin_impl : public std::enable_shared_from_this<producer_plugin
       std::map<chain::public_key_type, signature_provider_type> _signature_providers;
       std::set<chain::account_name>                             _producers;
       boost::asio::deadline_timer                               _timer;
-      std::map<chain::account_name, uint32_t>                   _producer_watermarks;
+      std::map<chain::account_name, uint32_t>                   _producer_watermarks; // 记录产块账号打包的最高块号
       pending_block_mode                                        _pending_block_mode;
       transaction_id_with_expiry_index                          _persistent_transactions;
 
@@ -1067,9 +1067,14 @@ producer_plugin_impl::start_block_result producer_plugin_impl::start_block(bool 
          //    confirmations to make sure we don't double sign after a crash TODO: make these watermarks durable?
          // 3) if it is a producer on this node where this node knows the last block it produced, safely set it -UNLESS-
          // 4) the producer on this node's last watermark is higher (meaning on a different fork)
+         // 确认块的前提条件：
+         // 1.本节点在产块中。
+         // 2.产块账号在本节点上。
+         // 3.该账号对应的已打包最高块号小于最高块号。
          if (currrent_watermark_itr != _producer_watermarks.end()) {
             auto watermark = currrent_watermark_itr->second;
             if (watermark < hbs->block_num) {
+               // 计算确认的块数目：（最高块号）-（该账号对应的已打包最高块号）
                blocks_to_confirm = std::min<uint16_t>(std::numeric_limits<uint16_t>::max(), (uint16_t)(hbs->block_num - watermark));
             }
          }
@@ -1486,7 +1491,7 @@ void producer_plugin_impl::produce_block() {
    //idump((fc::time_point::now() - hbt));
 
    block_state_ptr new_bs = chain.head_block_state();
-   _producer_watermarks[new_bs->header.producer] = chain.head_block_num();
+   _producer_watermarks[new_bs->header.producer] = chain.head_block_num(); // 记录当前产块账号的打包的最高块号
 
    ilog("Produced block ${id}... #${n} @ ${t} signed by ${p} [trxs: ${count}, lib: ${lib}, confirmed: ${confs}]",
         ("p",new_bs->header.producer)("id",fc::variant(new_bs->id).as_string().substr(0,16))
